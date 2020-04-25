@@ -1,0 +1,12 @@
+{
+  "extends": "@ayanaware/ts/config",
+  "compilerOptions": {
+    "target": "ES2019",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "rootDir": "src",
+    "declaration": true,
+    "sourceMap": true
+  },
+  "exclude": ["./build/"]
+}

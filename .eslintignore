@@ -1,7 +1,0 @@
-node_modules/*
-coverage/*
-ramda.path.js
-*.json
-*.log
-*.md
-*.txt
