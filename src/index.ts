@@ -5,14 +5,14 @@ import * as parsers from "./lib";
 import { mergeObjects } from "./util";
 
 export interface ParseArguments {
-  tagArgs: any[];
-  disabledParsers: string[];
-  enableLogging: boolean;
-  author: User;
-  channel: GuildChannel;
-  guild: Guild;
-  channels: GuildChannel[];
-  members: GuildMember[];
+  tagArgs?: any[];
+  disabledParsers?: string[];
+  enableLogging?: boolean;
+  author?: User;
+  channel?: GuildChannel;
+  guild?: Guild;
+  channels?: GuildChannel[];
+  members?: GuildMember[];
 }
 
 const matchRecursive = (str: string) =>
