@@ -6,7 +6,6 @@ import { ParserFn } from ".";
 
 export const discordParsers: Record<string, ParserFn> = {
   user: (args, str) => _fn('username', str, args.author, args.members),
-  nick: (args, str) => _fn('nick', str, args.author, args.members, { returnValue: true, searchByUsername: true }),
   discrim: (args, str) => _fn('discriminator', str, args.author, args.members, { returnValue: true, searchByUsername: true }),
   avatar: (args, str) => _fn('avatarURL', str, args.author, args.members, { returnValue: true, searchByUsername: true })(),
   creation: (_args, str) => getCreationTime(str),
@@ -48,28 +47,55 @@ interface Options {
   searchByUsername: boolean;
 }
 
-function _fn(searchBy: string, searchString: string, author: User, list: (GuildMember)[], options?: Options) {
-  // @ts-ignore
-  if (!searchString) return author[searchBy]
-  else if (!Array.isArray(list)) throw new Error(`Parameter 'list' for user/nick/discrim/avatar must be an array of Member objects`)
-  else {
-    // @ts-ignore
-    let l = list.map(u => ({ uname: u.user.username, [searchBy]: u[searchBy] }))
-    let matches: { value: any; distance: number; }[] = []
+function sift(list: Array<User | GuildMember>): User[] {
+  return list.reduce((l, c) => {
+    l.push(c instanceof User ? c : c.user);
+    return l;
+  }, []);
+}
 
-    l.map(i => {
-      const comparison = options && options.searchByUsername 
-        ? compare(searchString, i.uname) 
-        : compare(searchString, i[searchBy])
+function callFnOrReturn(key: keyof User, value: User) {
+  // @ts-ignore
+  return typeof value[key] === "function" ? value[key]() : value[key];
+}
+
+function _fn(
+  key: keyof User,
+  search: string,
+  author: User,
+  list: any[],
+  options?: Options
+) {
+  if (!search) return callFnOrReturn(key, author);
+  else if (!Array.isArray(list))
+    throw new Error(
+      `Parameter 'list' for user/nick/discrim/avatar must be an array of Member objects`
+    );
+  else {
+    list = sift(list);
+
+    let l = list.map((u) => ({
+      uname: u.user.username,
+      [key]: callFnOrReturn(key, u),
+    }));
+    let matches: { value: any; distance: number }[] = [];
+
+    l.map((i) => {
+      const comparison =
+        options && options.searchByUsername
+          ? compare(search, i.uname)
+          : compare(search, i[key]);
 
       if (comparison !== -1) {
         options && options.returnValue
-          ? matches.push({ value: i[searchBy], distance: comparison })
-          : matches.push({ value: i.uname, distance: comparison })
+          ? matches.push({ value: i[key], distance: comparison })
+          : matches.push({ value: i.uname, distance: comparison });
       }
-    })
+    });
 
-    matches = matches.sort((a, b) => b.distance -a.distance).map(m => m.value) // Distance based sort, then map to return value
-    return matches[0] || 'NO MATCH'
+    matches = matches
+      .sort((a, b) => b.distance - a.distance)
+      .map((m) => m.value); // Distance based sort, then map to return value
+    return matches[0] || "NO MATCH";
   }
 }
