@@ -1,6 +1,6 @@
 {
   "name": "@kyflx-dev/jagtag",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "A JavaScript port of https://github.com/jagrosh/JagTag.",
   "main": "build/index.js",
   "types": "build/index.d.ts",

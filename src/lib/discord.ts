@@ -1,4 +1,4 @@
-import { User, GuildMember} from "discord.js";
+import { User, GuildMember, ImageSize} from "discord.js";
 import compare from "leven";
 
 import { getCreationTime } from "../util";
@@ -7,7 +7,7 @@ import { ParserFn } from ".";
 export const discordParsers: Record<string, ParserFn> = {
   user: (args, str) => _fn('username', str, args.author, args.members),
   discrim: (args, str) => _fn('discriminator', str, args.author, args.members, { returnValue: true, searchByUsername: true }),
-  avatar: (args, str) => _fn('avatarURL', str, args.author, args.members, { returnValue: true, searchByUsername: true })(),
+  avatar: (args, str) => _fn('avatarURL', str, args.author, args.members, { returnValue: true, searchByUsername: true }),
   creation: (_args, str) => getCreationTime(str),
 
   // The parameters for these must be Eris entities
@@ -16,7 +16,7 @@ export const discordParsers: Record<string, ParserFn> = {
   server: args => args.guild.name,
   serverid: args => args.guild.id,
   servercount: args => args.guild.memberCount,
-  servericon: args => args.guild.iconURL,
+  servericon: (args, size: ImageSize) => args.guild.iconURL({ size }),
   channel: args => args.channel.name,
   channelid: args => args.channel.id,
   randuser: args => {
@@ -54,7 +54,7 @@ function sift(list: Array<User | GuildMember>): User[] {
   }, []);
 }
 
-function callFnOrReturn(key: keyof User, value: User) {
+function callFnOrReturn(key: string, value: {}) {
   // @ts-ignore
   return typeof value[key] === "function" ? value[key]() : value[key];
 }
